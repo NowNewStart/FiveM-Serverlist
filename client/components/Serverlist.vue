@@ -5,6 +5,7 @@
         <span class="block">
           <a class="button is-primary" @click="filterOutRP">Filter out RP servers</a>
           <a class="button is-primary" @click="filterOutFrenchies">Filter out French servers</a>
+          <a class="button is-danger" @click="resetList">Reset Serverlist</a>
         </span>
       </span>
     </span>
@@ -86,16 +87,19 @@ export default {
                                     .replace(/\^8/g,"")
                                     .replace(/\^9/g,"")
                                     .replace(/\^0/g,"")
+    },
+    resetList: function() {
+      if(this.sorting == 'players') {
+        this.filtered_by = "active players"
+        this.reloadServerlistByPlayers()
+      } else {
+        this.filtered_by = "Hostname"
+        this.reloadServerlistByHostname()
+      }
     }
   },
   mounted () {
-    if(this.sorting == 'players') {
-      this.filtered_by = "active players"
-      this.reloadServerlistByPlayers()
-    } else {
-      this.filtered_by = "Hostname"
-      this.reloadServerlistByHostname()
-    }
+    this.resetList()
   }
 }
 </script>
