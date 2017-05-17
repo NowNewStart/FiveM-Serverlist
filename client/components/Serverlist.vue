@@ -11,7 +11,7 @@
     <table class="table">
       <thead>
         <tr>
-          <td>Server Name</td>
+          <td>Server Name filtered by {{ filtered_by }}</td>
           <td>Players online</td>
           <td>Maximum players</td>
           <td>IP</td>
@@ -34,7 +34,8 @@ export default {
   props: ['sorting'],
   data: () => {
     return {
-      serverdata: ''
+      serverdata: '',
+      filtered_by: 'active players'
     }
   },
   methods: {
@@ -89,8 +90,10 @@ export default {
   },
   mounted () {
     if(this.sorting == 'players') {
+      this.filtered_by = "active players"
       this.reloadServerlistByPlayers()
     } else {
+      this.filtered_by = "Hostname"
       this.reloadServerlistByHostname()
     }
   }
