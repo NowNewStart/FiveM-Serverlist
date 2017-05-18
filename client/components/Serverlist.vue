@@ -19,24 +19,79 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="server in serverdata">
-          <td>{{ removeSpecialCharacters(server.Data.hostname) }}</td>
+        <tr v-for="server in serverdata" >
+          <td @click="showModal(server)">{{ removeSpecialCharacters(server.Data.hostname) }}</td>
           <td>{{ server.Data.clients }}</td>
           <td>{{ server.Data.svMaxclients }}</td>
           <td><a :href="'fivem://connect/' + server.EndPoint">{{ server.EndPoint }}</a></td>
         </tr>
       </tbody>
+      <div class="modal" v-if="modalInfo != ''" :class="{ 'is-active' : modalInfo != ''}" transition="zoom">
+          <div class="modal-background"></div>
+          <div class="modal-card">
+          <section class="modal-card-body">
+            <h4 class="title is-4">{{ removeSpecialCharacters(modalInfo.Data.hostname) }}</h4>
+            <div class="columns">
+              <div class="column">
+                <h4 class="title is-4">Players</h4>
+                <p v-if="modalInfo.Data.clients == 0">No players on the server.</p>
+                <table class="table" v-if="modalInfo.Data.clients != 0">
+                  <tr v-for="player in modalInfo.Data.players"><td>{{ player.name }}</td></tr>
+                </table>
+
+                </ul>
+              </div>
+              <div class="column">
+                <h4 class="title is-4">Serverinfo</h4>
+                  <table class="table">
+                    <tr>
+                      <td>Current players</td>
+                      <td>{{ modalInfo.Data.clients }}</td>
+                    </tr>
+                    <tr>
+                      <td>Maximum players</td>
+                      <td>{{ modalInfo.Data.svMaxclients }}</td>
+                    </tr>
+                    <tr>
+                      <td>Game type</td>
+                      <td>{{ modalInfo.Data.gametype }}</td>
+                    </tr>
+                    <tr>
+                      <td>Map name</td>
+                      <td>{{ modalInfo.Data.mapname }}</td>
+                    </tr>
+                    <tr>
+                      <td>Server IP</td>
+                      <td><a :href="'fivem://connect/' + modalInfo.EndPoint">{{ modalInfo.EndPoint }}</a></td>
+                    </tr>
+                  </table>
+              </div>
+            </div>
+        </section>
+      <footer class="modal-card-foot">
+        <a class="button" @click="closeModal">Close</a>
+      </footer>
+      </div>
+    </div>
   </p>
 </template>
 
 <script>
 import axios from 'axios';
+import { Modal, ImageModal, CardModal } from 'vue-bulma-modal'
 export default {
   props: ['sorting'],
+  components: {
+    Modal,
+    ImageModal,
+    CardModal,
+  },
   data: () => {
     return {
       serverdata: '',
-      filtered_by: 'active players'
+      filtered_by: 'active players',
+      modalShow: false,
+      modalInfo: ''
     }
   },
   methods: {
@@ -96,10 +151,24 @@ export default {
         this.filtered_by = "Hostname"
         this.reloadServerlistByHostname()
       }
+    },
+    showModal: function (server) {
+      this.modalShow = true
+      this.modalInfo = server
+    },
+    closeModal: function () {
+      this.modalShow = false;
+      this.modalInfo = ''
     }
   },
   mounted () {
     this.resetList()
+  },
+  events : {
+    ok: function() {
+      this.modalShow = false
+      this.modalInfo = ''
+    }
   }
 }
 </script>

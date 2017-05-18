@@ -2,7 +2,7 @@
   <div id="app">
     <nav class="nav">
       <div class="nav-left">
-        <a class="nav-item">
+        <router-link class="nav-item" to="/">
           FiveM
         </a>
       </div>
