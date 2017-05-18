@@ -1,5 +1,5 @@
 <template>
-  <p class="serverlist">
+  <p class="serverlist" v-if="serverdata != ''">
     <span class="columns">
       <span class="column" style="margin-left: 10px">
         <span class="block">
@@ -9,7 +9,7 @@
         </span>
       </span>
     </span>
-    <table class="table">
+    <table class="table" >
       <thead>
         <tr>
           <td>Server Name filtered by {{ filtered_by }}</td>
@@ -26,65 +26,30 @@
           <td><a :href="'fivem://connect/' + server.EndPoint">{{ server.EndPoint }}</a></td>
         </tr>
       </tbody>
-      <div class="modal" v-if="modalInfo != ''" :class="{ 'is-active' : modalInfo != ''}" transition="zoom">
-          <div class="modal-background"></div>
-          <div class="modal-card">
-          <section class="modal-card-body">
-            <h4 class="title is-4">{{ removeSpecialCharacters(modalInfo.Data.hostname) }}</h4>
-            <div class="columns">
-              <div class="column">
-                <h4 class="title is-4">Players</h4>
-                <p v-if="modalInfo.Data.clients == 0">No players on the server.</p>
-                <table class="table" v-if="modalInfo.Data.clients != 0">
-                  <tr v-for="player in modalInfo.Data.players"><td>{{ player.name }}</td></tr>
-                </table>
-
-                </ul>
-              </div>
-              <div class="column">
-                <h4 class="title is-4">Serverinfo</h4>
-                  <table class="table">
-                    <tr>
-                      <td>Current players</td>
-                      <td>{{ modalInfo.Data.clients }}</td>
-                    </tr>
-                    <tr>
-                      <td>Maximum players</td>
-                      <td>{{ modalInfo.Data.svMaxclients }}</td>
-                    </tr>
-                    <tr>
-                      <td>Game type</td>
-                      <td>{{ modalInfo.Data.gametype }}</td>
-                    </tr>
-                    <tr>
-                      <td>Map name</td>
-                      <td>{{ modalInfo.Data.mapname }}</td>
-                    </tr>
-                    <tr>
-                      <td>Server IP</td>
-                      <td><a :href="'fivem://connect/' + modalInfo.EndPoint">{{ modalInfo.EndPoint }}</a></td>
-                    </tr>
-                  </table>
-              </div>
-            </div>
-        </section>
-      <footer class="modal-card-foot">
-        <a class="button" @click="closeModal">Close</a>
-      </footer>
+    </table>
+    <div class="modal" v-if="modalInfo != ''" :class="{ 'is-active' : modalInfo != ''}" transition="zoom">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <ModalSection :serverinfo="modalInfo"></ModalSection>
+        <footer class="modal-card-foot">
+          <a class="button" @click="closeModal">Close</a>
+        </footer>
       </div>
     </div>
+  </p>
+  <p class="server-list" v-else style="margin-left: 20px">
+    Loading...
   </p>
 </template>
 
 <script>
 import axios from 'axios';
-import { Modal, ImageModal, CardModal } from 'vue-bulma-modal'
+import ModalSection from './ModalSection.vue';
+
 export default {
   props: ['sorting'],
   components: {
-    Modal,
-    ImageModal,
-    CardModal,
+    ModalSection
   },
   data: () => {
     return {
@@ -103,8 +68,6 @@ export default {
           if(a.Data.hostname > b.Data.hostname) return 1
           return 0
         })
-      }).catch(function (error) {
-        console.log(error)
       })
     },
     reloadServerlistByPlayers: function() {
@@ -115,8 +78,6 @@ export default {
           if(a.Data.players.length > b.Data.players.length) return -1
           return 0
         })
-      }).catch(function (error) {
-        console.log(error)
       })
     },
     filterOutRP: function() {
@@ -163,12 +124,6 @@ export default {
   },
   mounted () {
     this.resetList()
-  },
-  events : {
-    ok: function() {
-      this.modalShow = false
-      this.modalInfo = ''
-    }
   }
 }
 </script>
