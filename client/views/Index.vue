@@ -1,6 +1,6 @@
 <template>
   <div class="page">
-    <serverlist sorting="hostname"></serverlist>
+    <serverlist></serverlist>
   </div>
 </template>
 

@@ -1,19 +1,20 @@
 <template>
-  <p class="serverlist" v-if="serverdata != ''">
+  <p class="serverlist">
     <span class="columns">
       <span class="column" style="margin-left: 10px">
         <span class="block">
           <a class="button is-primary" @click="filterOutRP">Filter out RP servers</a>
           <a class="button is-primary" @click="filterOutFrenchies">Filter out French servers</a>
           <a class="button is-danger" @click="resetList">Reset Serverlist</a>
+          <input v-model="searchfield" type="text" @input="search($event)" placeholder="Search for server" class="input" style="margin-top: 20px">
         </span>
       </span>
     </span>
     <table class="table" >
       <thead>
         <tr>
-          <td>Server Name filtered by {{ filtered_by }}</td>
-          <td>Players online</td>
+          <td><i @click="sortByHostname(true)" class="fa fa-arrow-up"></i> Server Name <i @click="sortByHostname(false)" class="fa fa-arrow-down"></i> </td>
+          <td><i @click="sortByPlayers(true)" class="fa fa-arrow-up"></i> Players online <i @click="sortByPlayers(false)" class="fa fa-arrow-down"></i> </td>
           <td>Maximum players</td>
           <td>IP</td>
         </tr>
@@ -37,9 +38,6 @@
       </div>
     </div>
   </p>
-  <p class="server-list" v-else style="margin-left: 20px">
-    Loading...
-  </p>
 </template>
 
 <script>
@@ -47,37 +45,22 @@ import axios from 'axios';
 import ModalSection from './ModalSection.vue';
 
 export default {
-  props: ['sorting'],
   components: {
     ModalSection
   },
   data: () => {
     return {
-      serverdata: '',
-      filtered_by: 'active players',
+      serverdata: {},
       modalShow: false,
-      modalInfo: ''
+      modalInfo: '',
+      searchfield: ''
     }
   },
   methods: {
-    reloadServerlistByHostname: function() {
+    fetch: function() {
       var self = this;
       axios.get('http://runtime.fivem.net/servers').then(function (response) {
-        self.serverdata = response['data'].sort(function (a,b) {
-          if(a.Data.hostname < b.Data.hostname) return -1
-          if(a.Data.hostname > b.Data.hostname) return 1
-          return 0
-        })
-      })
-    },
-    reloadServerlistByPlayers: function() {
-      var self = this;
-      axios.get('http://runtime.fivem.net/servers').then(function (response) {
-        self.serverdata = response['data'].sort(function (a,b) {
-          if(a.Data.players.length < b.Data.players.length) return 1
-          if(a.Data.players.length > b.Data.players.length) return -1
-          return 0
-        })
+        self.serverdata = response['data'];
       })
     },
     filterOutRP: function() {
@@ -93,7 +76,7 @@ export default {
       })
     },
     removeSpecialCharacters: function(hostname) {
-      return hostname.replace(/\^1/g,"")
+      return hostname.toString().replace(/\^1/g,"")
                                     .replace(/\^2/g,"")
                                     .replace(/\^3/g,"")
                                     .replace(/\^4/g,"")
@@ -104,15 +87,6 @@ export default {
                                     .replace(/\^9/g,"")
                                     .replace(/\^0/g,"")
     },
-    resetList: function() {
-      if(this.sorting == 'players') {
-        this.filtered_by = "active players"
-        this.reloadServerlistByPlayers()
-      } else {
-        this.filtered_by = "Hostname"
-        this.reloadServerlistByHostname()
-      }
-    },
     showModal: function (server) {
       this.modalShow = true
       this.modalInfo = server
@@ -120,10 +94,54 @@ export default {
     closeModal: function () {
       this.modalShow = false;
       this.modalInfo = ''
-    }
+    },
+    sortByHostname: function(sorting) {
+        if(!sorting) {
+          this.serverdata.sort(function (a,b) {
+            if(a.Data.hostname < b.Data.hostname) return -1;
+            if(a.Data.hostname > b.Data.hostname) return 1;
+            return 0;
+          })
+        } else {
+          this.serverdata.sort(function (a,b) {
+            if(a.Data.hostname < b.Data.hostname) return 1;
+            if(a.Data.hostname > b.Data.hostname) return -1;
+            return 0;
+          })
+        }
+
+    },
+    sortByPlayers: function(sorting) {
+        if(!sorting) {
+          this.serverdata.sort(function (a,b) {
+            if(a.Data.clients < b.Data.clients) return -1;
+            if(a.Data.clients > b.Data.clients) return 1;
+            return 0;
+          })
+        } else {
+          this.serverdata.sort(function (a,b) {
+            if(a.Data.clients < b.Data.clients) return 1;
+            if(a.Data.clients > b.Data.clients) return -1;
+            return 0;
+          })
+        }
+     },
+     resetList: function() {
+      this.fetch(),
+      this.sortByPlayers()
+     },
+     search: function(ev) {
+      this.fetch()
+      this.sortByPlayers(true)
+      this.serverdata = this.serverdata.filter(function(server) {
+        var hostname = server.Data.hostname.toString().toLowerCase()
+        return (hostname.indexOf(ev.target._value) > -1)
+      })
+     }
   },
   mounted () {
-    this.resetList()
+    this.fetch()
+    this.sortByPlayers(true)
   }
 }
 </script>
