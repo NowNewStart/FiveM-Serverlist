@@ -24,7 +24,7 @@
           <td @click="showModal(server)">{{ removeSpecialCharacters(server.Data.hostname) }}</td>
           <td>{{ server.Data.clients }}</td>
           <td>{{ server.Data.svMaxclients }}</td>
-          <td><a :href="'fivem://connect/' + server.EndPoint">{{ server.EndPoint }}</a></td>
+          <td><a @click="copyToClipboard(server.EndPoint)" title="Click on the link to copy it to your clipboard">{{ server.EndPoint }}</a></td>
         </tr>
       </tbody>
     </table>
@@ -76,16 +76,7 @@ export default {
       })
     },
     removeSpecialCharacters: function(hostname) {
-      return hostname.toString().replace(/\^1/g,"")
-                                    .replace(/\^2/g,"")
-                                    .replace(/\^3/g,"")
-                                    .replace(/\^4/g,"")
-                                    .replace(/\^5/g,"")
-                                    .replace(/\^6/g,"")
-                                    .replace(/\^7/g,"")
-                                    .replace(/\^8/g,"")
-                                    .replace(/\^9/g,"")
-                                    .replace(/\^0/g,"")
+      return hostname.toString().replace(/\^1/g,"").replace(/\^2/g,"").replace(/\^3/g,"").replace(/\^4/g,"").replace(/\^5/g,"").replace(/\^6/g,"").replace(/\^7/g,"").replace(/\^8/g,"").replace(/\^9/g,"").replace(/\^0/g,"")
     },
     showModal: function (server) {
       this.modalShow = true
@@ -128,20 +119,26 @@ export default {
      },
      resetList: function() {
       this.fetch(),
-      this.sortByPlayers()
+      this.sortByPlayers(true)
      },
      search: function(ev) {
-      this.fetch()
-      this.sortByPlayers(true)
+      this.resetList()
       this.serverdata = this.serverdata.filter(function(server) {
         var hostname = server.Data.hostname.toString().toLowerCase()
         return (hostname.indexOf(ev.target._value) > -1)
       })
+     },
+     copyToClipboard(ip) {
+        var textField = document.createElement('textarea');
+        textField.innerText = ip;
+        document.body.appendChild(textField);
+        textField.select();
+        document.execCommand('copy');
+        textField.remove();
      }
   },
   mounted () {
-    this.fetch()
-    this.sortByPlayers(true)
+    this.resetList()
   }
 }
 </script>
